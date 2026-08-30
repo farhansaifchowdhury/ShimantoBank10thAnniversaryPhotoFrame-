@@ -415,12 +415,21 @@ downloadBtn.addEventListener('click', async () => {
   // Small delay to allow loader UI to render
   setTimeout(() => {
     try {
-      const scaleFactor = 2; // High-res output
       const canvas = document.createElement('canvas');
       
-      // Fallback size if frameImg.naturalWidth is somehow 0
-      canvas.width = (frameImg.naturalWidth || 1080) * scaleFactor;
-      canvas.height = (frameImg.naturalHeight || 1080) * scaleFactor;
+      let targetWidth = frameImg.naturalWidth || 1080;
+      let targetHeight = frameImg.naturalHeight || 1080;
+      
+      // Cap maximum dimensions to prevent iOS Safari from silently failing due to memory limits
+      const maxDim = 2048;
+      if (targetWidth > maxDim || targetHeight > maxDim) {
+        const ratio = Math.min(maxDim / targetWidth, maxDim / targetHeight);
+        targetWidth = targetWidth * ratio;
+        targetHeight = targetHeight * ratio;
+      }
+
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
       const ctx = canvas.getContext('2d');
 
       // Base background color just in case
