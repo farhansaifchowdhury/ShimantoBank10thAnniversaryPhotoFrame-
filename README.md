@@ -1,1 +1,1 @@
-Shimanto Bank 10th Year Anniversary
+Shimanto Bank 9th Year Anniversary

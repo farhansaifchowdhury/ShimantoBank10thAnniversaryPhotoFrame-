@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Photo Frame</title>
+<style>
+  body, html {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background: #f0f0f0;
+  }
+
+  h1 { font-size: 28px; margin-bottom: 10px; color: #003366; }
+  #logo { max-width: 250px; height: auto; margin-bottom: 20px; }
+  h2 { margin-bottom: 20px; font-size: 20px; color: #333; }
+
+  #frameContainer {
+    position: relative;
+    width: 90vw;
+    max-width: 400px;
+    aspect-ratio: 1/1;
+    overflow: hidden;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #fff;
+  }
+
+  #userPhoto {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  #frame {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: auto;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  button, input[type="file"] {
+    margin: 10px 0;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #800000;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  button:hover, input[type="file"]:hover { background-color: #a00000; }
+</style>
+</head>
+<body>
+
+<h1>Shimanto Bank 9th Year Anniversary</h1>
+<img id="logo" src="Logo.png" alt="Logo">
+
+<h2>Add Your Photo to the Frame</h2>
+<input type="file" id="uploadPhoto" accept="image/*">
+
+<div id="frameContainer">
+  <img id="userPhoto" src="" alt="Your Photo">
+  <img id="frame" src="Shimanto.png" alt="Frame">
+</div>
+
+<button id="downloadBtn">Download / Save Image</button>
+
+<script>
+const uploadPhoto = document.getElementById('uploadPhoto');
+const userPhoto = document.getElementById('userPhoto');
+const frameImg = document.getElementById('frame');
+const downloadBtn = document.getElementById('downloadBtn');
+
+let uploadedImg = new Image();
+
+uploadPhoto.addEventListener('change', (e)=>{
+  const file = e.target.files[0];
+  if(file){
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      uploadedImg.src = ev.target.result;
+      userPhoto.src = ev.target.result;
+    }
+    reader.readAsDataURL(file);
+  }
+});
+
+downloadBtn.addEventListener('click', ()=>{
+  if(!uploadedImg.src) return alert("Please upload a photo first.");
+
+  // Use frame's natural dimensions for high-res output
+  const scaleFactor = 2; // increase for higher resolution
+  const canvas = document.createElement('canvas');
+  canvas.width = frameImg.naturalWidth * scaleFactor;
+  canvas.height = frameImg.naturalHeight * scaleFactor;
+  const ctx = canvas.getContext('2d');
+
+  // Draw uploaded photo, preserving aspect ratio
+  const scale = Math.min(canvas.width / uploadedImg.width, canvas.height / uploadedImg.height);
+  const w = uploadedImg.width * scale;
+  const h = uploadedImg.height * scale;
+  const x = (canvas.width - w)/2;
+  const y = (canvas.height - h)/2;
+  ctx.drawImage(uploadedImg, x, y, w, h);
+
+  // Draw frame on top
+  ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+
+  // Download as JPEG at max quality
+  const link = document.createElement('a');
+  link.href = canvas.toDataURL('image/jpeg', 1.0);
+  link.download = 'framed-photo.jpg';
+  link.click();
+});
+</script>
+
+</body>
+</html>
