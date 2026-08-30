@@ -28,26 +28,47 @@
     max-width: 400px;
     aspect-ratio: 1/1;
     overflow: hidden;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     display: flex;
     justify-content: center;
     align-items: center;
     background: #fff;
+    /* Disable touch actions on the container so it doesn't scroll the page when dragging */
+    touch-action: none; 
   }
 
   #userPhoto {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    transform-origin: center;
+    cursor: grab;
+  }
+  
+  #userPhoto:active {
+    cursor: grabbing;
   }
 
   #frame {
     position: absolute;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
-    width: auto;
+    width: 100%;
     height: 100%;
     pointer-events: none;
+  }
+
+  .controls {
+    margin: 10px 0 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 16px;
+    color: #333;
+  }
+
+  input[type="range"] {
+    width: 150px;
   }
 
   button, input[type="file"] {
@@ -66,14 +87,20 @@
 </head>
 <body>
 
-<h1>Shimanto Bank 9th Year Anniversary</h1>
+<!-- Notice: Changed to 10th Year Anniversary based on your prompt -->
+<h1>Shimanto Bank 10th Year Anniversary</h1> 
 <img id="logo" src="Logo.png" alt="Logo">
 
 <h2>Add Your Photo to the Frame</h2>
 <input type="file" id="uploadPhoto" accept="image/*">
 
+<div class="controls">
+  <label for="zoom">Zoom:</label>
+  <input type="range" id="zoom" min="0.5" max="3" step="0.05" value="1">
+</div>
+
 <div id="frameContainer">
-  <img id="userPhoto" src="" alt="Your Photo">
+  <img id="userPhoto" src="" alt="Your Photo" style="display:none;">
   <img id="frame" src="Shimanto.png" alt="Frame">
 </div>
 
@@ -84,46 +111,130 @@ const uploadPhoto = document.getElementById('uploadPhoto');
 const userPhoto = document.getElementById('userPhoto');
 const frameImg = document.getElementById('frame');
 const downloadBtn = document.getElementById('downloadBtn');
+const frameContainer = document.getElementById('frameContainer');
+const zoomSlider = document.getElementById('zoom');
 
 let uploadedImg = new Image();
+let isDragging = false;
+let startX, startY;
+let translateX = 0, translateY = 0;
+let scale = 1;
+let baseScale = 1;
 
+// Uploading the photo
 uploadPhoto.addEventListener('change', (e)=>{
   const file = e.target.files[0];
   if(file){
     const reader = new FileReader();
     reader.onload = (ev)=>{
       uploadedImg.src = ev.target.result;
-      userPhoto.src = ev.target.result;
     }
     reader.readAsDataURL(file);
   }
 });
 
+// Setup image and reset positioning when a new image loads
+uploadedImg.onload = () => {
+  const containerW = frameContainer.clientWidth;
+  const containerH = frameContainer.clientHeight;
+  
+  // Calculate base scale to make the image 'cover' the container initially
+  baseScale = Math.max(containerW / uploadedImg.width, containerH / uploadedImg.height);
+  
+  userPhoto.src = uploadedImg.src;
+  userPhoto.style.display = 'block';
+  
+  // Reset transforms for the new photo
+  translateX = 0;
+  translateY = 0;
+  scale = 1;
+  zoomSlider.value = 1;
+  updateTransform();
+}
+
+// Zoom control
+zoomSlider.addEventListener('input', (e) => {
+  scale = parseFloat(e.target.value);
+  updateTransform();
+});
+
+function updateTransform() {
+  userPhoto.style.width = uploadedImg.width + 'px';
+  userPhoto.style.height = uploadedImg.height + 'px';
+  userPhoto.style.transform = `translate(-50%, -50%) translate(${translateX}px, ${translateY}px) scale(${baseScale * scale})`;
+}
+
+// ---- Drag / Pan Functionality ----
+userPhoto.addEventListener('mousedown', startDrag);
+userPhoto.addEventListener('touchstart', startDrag, {passive: false});
+
+function startDrag(e) {
+  e.preventDefault();
+  isDragging = true;
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  startX = clientX - translateX;
+  startY = clientY - translateY;
+}
+
+document.addEventListener('mousemove', drag);
+document.addEventListener('touchmove', drag, {passive: false});
+
+function drag(e) {
+  if (!isDragging) return;
+  e.preventDefault(); // prevents page scrolling while dragging image on mobile
+  const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+  const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+  translateX = clientX - startX;
+  translateY = clientY - startY;
+  updateTransform();
+}
+
+document.addEventListener('mouseup', stopDrag);
+document.addEventListener('touchend', stopDrag);
+
+function stopDrag() {
+  isDragging = false;
+}
+
+// ---- Export / Save Functionality ----
 downloadBtn.addEventListener('click', ()=>{
   if(!uploadedImg.src) return alert("Please upload a photo first.");
 
-  // Use frame's natural dimensions for high-res output
-  const scaleFactor = 2; // increase for higher resolution
+  const scaleFactor = 2; // Increase for higher resolution output (e.g. 3 or 4)
   const canvas = document.createElement('canvas');
-  canvas.width = frameImg.naturalWidth * scaleFactor;
-  canvas.height = frameImg.naturalHeight * scaleFactor;
+  
+  // Size the canvas based on the frame's true dimensions
+  canvas.width = (frameImg.naturalWidth || 1080) * scaleFactor;
+  canvas.height = (frameImg.naturalHeight || 1080) * scaleFactor;
   const ctx = canvas.getContext('2d');
 
-  // Draw uploaded photo, preserving aspect ratio
-  const scale = Math.min(canvas.width / uploadedImg.width, canvas.height / uploadedImg.height);
-  const w = uploadedImg.width * scale;
-  const h = uploadedImg.height * scale;
-  const x = (canvas.width - w)/2;
-  const y = (canvas.height - h)/2;
-  ctx.drawImage(uploadedImg, x, y, w, h);
+  // Add a white background to avoid transparent spaces if zoomed out
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Draw frame on top
-  ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+  const CW = canvas.width;
+  const CH = canvas.height;
+  
+  // Figure out the ratio between the on-screen container and the high-res canvas
+  const canvasRatio = CW / frameContainer.clientWidth;
 
-  // Download as JPEG at max quality
+  // Draw the User Photo mimicking the translation and zoom
+  ctx.save();
+  ctx.translate(CW / 2, CH / 2); // Start drawing from the exact center
+  ctx.translate(translateX * canvasRatio, translateY * canvasRatio); // Apply user panning
+  const totalScale = baseScale * scale * canvasRatio;
+  ctx.scale(totalScale, totalScale); // Apply user zoom + canvas scaling
+  ctx.drawImage(uploadedImg, -uploadedImg.width / 2, -uploadedImg.height / 2);
+  ctx.restore();
+
+  // Draw the Frame image over the photo
+  ctx.drawImage(frameImg, 0, 0, CW, CH);
+
+  // Download Image
   const link = document.createElement('a');
   link.href = canvas.toDataURL('image/jpeg', 1.0);
-  link.download = 'framed-photo.jpg';
+  link.download = 'Shimanto_10th_Anniversary_Photo.jpg';
   link.click();
 });
 </script>
