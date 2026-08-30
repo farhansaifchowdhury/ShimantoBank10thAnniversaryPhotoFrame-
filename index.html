@@ -2,39 +2,102 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Photo Frame</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Shimanto Bank - 10th Anniversary</title>
+<!-- Google Fonts for modern typography -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-  body, html {
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-family: Arial, sans-serif;
-    text-align: center;
-    background: #f0f0f0;
+  :root {
+    --primary-red: #d3222a;
+    --primary-green: #2d7a46;
+    --bg-color: #e8f1e3;
+    --card-bg: rgba(255, 255, 255, 0.85);
+    --text-main: #1a1a1a;
   }
 
-  h1 { font-size: 28px; margin-bottom: 10px; color: #003366; }
-  #logo { max-width: 250px; height: auto; margin-bottom: 20px; }
-  h2 { margin-bottom: 20px; font-size: 20px; color: #333; }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body, html {
+    min-height: 100vh;
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, var(--bg-color) 0%, #ffffff 100%);
+    color: var(--text-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-x: hidden;
+  }
+
+  .app-container {
+    width: 100%;
+    max-width: 500px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 20px;
+    animation: fadeInDown 0.8s ease;
+  }
+
+  #logo {
+    max-width: 200px;
+    height: auto;
+    margin-bottom: 15px;
+    filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.1));
+  }
+
+  h1 {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--primary-green);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  h1 span {
+    color: var(--primary-red);
+  }
+
+  p.subtitle {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 20px;
+  }
+
+  .glass-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    border-radius: 24px;
+    padding: 20px;
+    width: 100%;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: fadeInUp 0.8s ease;
+  }
 
   #frameContainer {
     position: relative;
-    width: 90vw;
-    max-width: 400px;
+    width: 100%;
     aspect-ratio: 1/1;
     overflow: hidden;
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #fff;
-    /* Disable touch actions on the container so it doesn't scroll the page when dragging */
-    touch-action: none; 
+    border-radius: 12px;
+    background: #f8f9fa;
+    box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+    touch-action: none; /* Crucial for mobile dragging */
+    margin-bottom: 20px;
   }
 
   #userPhoto {
@@ -43,6 +106,7 @@
     transform: translate(-50%, -50%);
     transform-origin: center;
     cursor: grab;
+    will-change: transform;
   }
   
   #userPhoto:active {
@@ -51,60 +115,206 @@
 
   #frame {
     position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
+    top: 0; left: 0;
     width: 100%;
     height: 100%;
     pointer-events: none;
+    z-index: 10;
   }
 
-  .controls {
-    margin: 10px 0 20px 0;
+  .controls-panel {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  /* File Upload Button Styling */
+  .upload-btn-wrapper {
+    position: relative;
+    overflow: hidden;
+    display: inline-block;
+    width: 100%;
+  }
+
+  .upload-btn-wrapper input[type=file] {
+    font-size: 100px;
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    cursor: pointer;
+    height: 100%;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+  }
+
+  .btn:active {
+    transform: scale(0.98);
+  }
+
+  .btn-primary {
+    background: var(--primary-green);
+    color: white;
+    box-shadow: 0 4px 15px rgba(45, 122, 70, 0.3);
+  }
+
+  .btn-primary:hover {
+    background: #236338;
+  }
+
+  .btn-success {
+    background: var(--primary-red);
+    color: white;
+    box-shadow: 0 4px 15px rgba(211, 34, 42, 0.3);
+  }
+
+  .btn-success:hover {
+    background: #a81920;
+  }
+
+  /* Slider Styling */
+  .zoom-control {
     display: flex;
     align-items: center;
-    gap: 15px;
-    font-size: 16px;
-    color: #333;
+    background: rgba(0,0,0,0.03);
+    padding: 12px 16px;
+    border-radius: 12px;
+    gap: 12px;
+  }
+  
+  .zoom-icon {
+    width: 20px;
+    height: 20px;
+    fill: #666;
   }
 
   input[type="range"] {
-    width: 150px;
+    flex-grow: 1;
+    -webkit-appearance: none;
+    height: 6px;
+    background: #ddd;
+    border-radius: 5px;
+    outline: none;
   }
 
-  button, input[type="file"] {
-    margin: 10px 0;
-    padding: 10px 20px;
-    font-size: 16px;
-    font-weight: bold;
-    color: #fff;
-    background-color: #800000;
-    border: none;
-    border-radius: 5px;
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--primary-green);
     cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: transform 0.1s;
   }
-  button:hover, input[type="file"]:hover { background-color: #a00000; }
+
+  input[type="range"]::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+  }
+
+  /* Animations */
+  @keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Loader overlay */
+  #loader {
+    display: none;
+    position: fixed;
+    top:0; left:0; right:0; bottom:0;
+    background: rgba(255,255,255,0.8);
+    z-index: 999;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-weight: 600;
+    color: var(--primary-green);
+  }
+  
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #ddd;
+    border-top: 4px solid var(--primary-green);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 10px;
+  }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
 </style>
 </head>
 <body>
 
-<!-- Notice: Changed to 10th Year Anniversary based on your prompt -->
-<h1>Shimanto Bank 10th Year Anniversary</h1> 
-<img id="logo" src="Logo.png" alt="Logo">
+<div class="app-container">
+  <header>
+    <!-- Add your actual logo source here, assuming Logo.png exists -->
+    <img id="logo" src="Logo.png" alt="Shimanto Bank Logo" onerror="this.style.display='none'">
+    <h1>Celebrating <span>10</span> Years</h1>
+    <p class="subtitle">Customize your anniversary photo frame</p>
+  </header>
 
-<h2>Add Your Photo to the Frame</h2>
-<input type="file" id="uploadPhoto" accept="image/*">
+  <main class="glass-card">
+    <div id="frameContainer">
+      <img id="userPhoto" src="" alt="Your Photo" style="display:none;">
+      <img id="frame" src="Shimanto.png" alt="10th Anniversary Frame" crossorigin="anonymous">
+    </div>
 
-<div class="controls">
-  <label for="zoom">Zoom:</label>
-  <input type="range" id="zoom" min="0.5" max="3" step="0.05" value="1">
+    <div class="controls-panel">
+      
+      <div class="upload-btn-wrapper">
+        <button class="btn btn-primary">
+          <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+          Select Photo
+        </button>
+        <input type="file" id="uploadPhoto" accept="image/png, image/jpeg, image/jpg">
+      </div>
+
+      <div class="zoom-control">
+        <svg class="zoom-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM7 9h5v1H7V9z"/></svg>
+        <input type="range" id="zoom" min="0.3" max="3" step="0.02" value="1">
+        <svg class="zoom-icon" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14zM12 10h-2v2H9v-2H7V9h2V7h1v2h2v1z"/></svg>
+      </div>
+
+      <button class="btn btn-success" id="downloadBtn">
+        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+        Save / Share Photo
+      </button>
+
+    </div>
+  </main>
 </div>
 
-<div id="frameContainer">
-  <img id="userPhoto" src="" alt="Your Photo" style="display:none;">
-  <img id="frame" src="Shimanto.png" alt="Frame">
+<div id="loader">
+  <div class="spinner"></div>
+  <p>Processing Image...</p>
 </div>
-
-<button id="downloadBtn">Download / Save Image</button>
 
 <script>
 const uploadPhoto = document.getElementById('uploadPhoto');
@@ -113,6 +323,7 @@ const frameImg = document.getElementById('frame');
 const downloadBtn = document.getElementById('downloadBtn');
 const frameContainer = document.getElementById('frameContainer');
 const zoomSlider = document.getElementById('zoom');
+const loader = document.getElementById('loader');
 
 let uploadedImg = new Image();
 let isDragging = false;
@@ -121,30 +332,29 @@ let translateX = 0, translateY = 0;
 let scale = 1;
 let baseScale = 1;
 
-// Uploading the photo
-uploadPhoto.addEventListener('change', (e)=>{
+// Load user photo
+uploadPhoto.addEventListener('change', (e) => {
   const file = e.target.files[0];
   if(file){
     const reader = new FileReader();
-    reader.onload = (ev)=>{
+    reader.onload = (ev) => {
       uploadedImg.src = ev.target.result;
-    }
+    };
     reader.readAsDataURL(file);
   }
 });
 
-// Setup image and reset positioning when a new image loads
 uploadedImg.onload = () => {
   const containerW = frameContainer.clientWidth;
   const containerH = frameContainer.clientHeight;
   
-  // Calculate base scale to make the image 'cover' the container initially
+  // Fit image beautifully
   baseScale = Math.max(containerW / uploadedImg.width, containerH / uploadedImg.height);
   
   userPhoto.src = uploadedImg.src;
   userPhoto.style.display = 'block';
   
-  // Reset transforms for the new photo
+  // Reset interactions
   translateX = 0;
   translateY = 0;
   scale = 1;
@@ -152,7 +362,6 @@ uploadedImg.onload = () => {
   updateTransform();
 }
 
-// Zoom control
 zoomSlider.addEventListener('input', (e) => {
   scale = parseFloat(e.target.value);
   updateTransform();
@@ -164,7 +373,7 @@ function updateTransform() {
   userPhoto.style.transform = `translate(-50%, -50%) translate(${translateX}px, ${translateY}px) scale(${baseScale * scale})`;
 }
 
-// ---- Drag / Pan Functionality ----
+// Mobile & Desktop Dragging
 userPhoto.addEventListener('mousedown', startDrag);
 userPhoto.addEventListener('touchstart', startDrag, {passive: false});
 
@@ -182,7 +391,7 @@ document.addEventListener('touchmove', drag, {passive: false});
 
 function drag(e) {
   if (!isDragging) return;
-  e.preventDefault(); // prevents page scrolling while dragging image on mobile
+  e.preventDefault(); 
   const clientX = e.touches ? e.touches[0].clientX : e.clientX;
   const clientY = e.touches ? e.touches[0].clientY : e.clientY;
   translateX = clientX - startX;
@@ -197,45 +406,85 @@ function stopDrag() {
   isDragging = false;
 }
 
-// ---- Export / Save Functionality ----
-downloadBtn.addEventListener('click', ()=>{
-  if(!uploadedImg.src) return alert("Please upload a photo first.");
+// Download / Share Logic (Optimized for Mobile native OS saving)
+downloadBtn.addEventListener('click', async () => {
+  if(!uploadedImg.src) return alert("Please select a photo first!");
 
-  const scaleFactor = 2; // Increase for higher resolution output (e.g. 3 or 4)
-  const canvas = document.createElement('canvas');
-  
-  // Size the canvas based on the frame's true dimensions
-  canvas.width = (frameImg.naturalWidth || 1080) * scaleFactor;
-  canvas.height = (frameImg.naturalHeight || 1080) * scaleFactor;
-  const ctx = canvas.getContext('2d');
+  loader.style.display = 'flex';
 
-  // Add a white background to avoid transparent spaces if zoomed out
-  ctx.fillStyle = '#fff';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  // Small delay to allow loader UI to render
+  setTimeout(() => {
+    try {
+      const scaleFactor = 2; // High-res output
+      const canvas = document.createElement('canvas');
+      
+      // Fallback size if frameImg.naturalWidth is somehow 0
+      canvas.width = (frameImg.naturalWidth || 1080) * scaleFactor;
+      canvas.height = (frameImg.naturalHeight || 1080) * scaleFactor;
+      const ctx = canvas.getContext('2d');
 
-  const CW = canvas.width;
-  const CH = canvas.height;
-  
-  // Figure out the ratio between the on-screen container and the high-res canvas
-  const canvasRatio = CW / frameContainer.clientWidth;
+      // Base background color just in case
+      ctx.fillStyle = '#e8f1e3'; 
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Draw the User Photo mimicking the translation and zoom
-  ctx.save();
-  ctx.translate(CW / 2, CH / 2); // Start drawing from the exact center
-  ctx.translate(translateX * canvasRatio, translateY * canvasRatio); // Apply user panning
-  const totalScale = baseScale * scale * canvasRatio;
-  ctx.scale(totalScale, totalScale); // Apply user zoom + canvas scaling
-  ctx.drawImage(uploadedImg, -uploadedImg.width / 2, -uploadedImg.height / 2);
-  ctx.restore();
+      const CW = canvas.width;
+      const CH = canvas.height;
+      const canvasRatio = CW / frameContainer.clientWidth;
 
-  // Draw the Frame image over the photo
-  ctx.drawImage(frameImg, 0, 0, CW, CH);
+      // Draw user image with panning and zooming applied
+      ctx.save();
+      ctx.translate(CW / 2, CH / 2); 
+      ctx.translate(translateX * canvasRatio, translateY * canvasRatio); 
+      const totalScale = baseScale * scale * canvasRatio;
+      ctx.scale(totalScale, totalScale); 
+      ctx.drawImage(uploadedImg, -uploadedImg.width / 2, -uploadedImg.height / 2);
+      ctx.restore();
 
-  // Download Image
-  const link = document.createElement('a');
-  link.href = canvas.toDataURL('image/jpeg', 1.0);
-  link.download = 'Shimanto_10th_Anniversary_Photo.jpg';
-  link.click();
+      // Overlay the frame
+      ctx.drawImage(frameImg, 0, 0, CW, CH);
+
+      // Convert Canvas to Blob for native Sharing / Downloading
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          loader.style.display = 'none';
+          return alert("Failed to generate image.");
+        }
+
+        const fileName = 'Shimanto_10th_Anniversary.jpg';
+        const file = new File([blob], fileName, { type: 'image/jpeg' });
+
+        // Mobile Web Share API - Brings up native iOS/Android share sheet to "Save Image"
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          try {
+            await navigator.share({
+              files: [file],
+              title: 'Shimanto Bank 10th Anniversary',
+              text: 'Celebrating 10 years with Shimanto Bank!',
+            });
+          } catch (err) {
+            console.log("Share cancelled", err);
+          }
+        } else {
+          // Desktop Fallback
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = fileName;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }
+        
+        loader.style.display = 'none';
+      }, 'image/jpeg', 0.95); // High quality JPEG
+
+    } catch (e) {
+      console.error(e);
+      loader.style.display = 'none';
+      alert("Something went wrong while saving.");
+    }
+  }, 100);
 });
 </script>
 
